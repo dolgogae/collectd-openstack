@@ -5,14 +5,56 @@ collectd-openstack
 
 A set of collectd plugins monitoring and publishing metrics for OpenStack components.
 
-It includes plugins to monitor the different components, including:
+## Screenshots
 
-* Glance
-* Keystone
-* Nova
-* Swift
+![image](https://raw.github.com/rochaporto/collectd-openstack/master/public/openstack-usage.png)
 
-The original code was taken from the [rackspace chef cookbook](https://github.com/rochaporto/openstack-monitoring), and adapted as needed.
+## Plugins and Metrics
+
+There are several plugins, mapping to each of the openstack components.
+
+Find below a list of the available plugins and the metrics they publish.
+
+* cinder_plugin
+  * openstack-cinder.&lt;tenant>.volumes.count (number of tenant volumes)
+  * openstack-cinder.&lt;tenant>.volumes.bytes (total bytes of tenant volumes)
+  * openstack-cinder.&lt;tenant>.volume-snapshots.count (number of tenant snapshots)
+  * openstack-cinder.&lt;tenant>.volume-snapshots.bytes (total bytes of tenant snapshots)
+  * openstack-cinder.&lt;tenant>.limites-{maxTotalVolumeGigabytes,maxTotalVolumes}
+* glance_plugin
+  * openstack-glance.&lt;tenant>.images.count (number of tenant images)
+  * openstack-glance.&lt;tenant>.images.bytes (total bytes of tenant images)
+* keystone_plugin
+  * openstack-keystone.&lt;tenant>.users.count (number of tenant users)
+  * openstack-keystone.totals.tenants.count (total number of tenants)
+  * openstack-keystone.totals.users.count (total number of users)
+  * openstack-keystone.totals.services.count (total number of services)
+  * openstack-keystone.totals.endpoints.count (total number of endpoints)
+* neutron_plugin
+  * openstack-neutron.&lt;tenant>.networks.count (number of tenant networks)
+  * openstack-neutron.&lt;tenant>.subnets.count (number of tenant subnets)
+  * openstack-neutron.&lt;tenant>.routers.count (number of tenant routers)
+  * openstack-neutron.&lt;tenant>.ports.count (number of tenant ports)
+  * openstack-neutron.&lt;tenant>.floatingips.count (number of tenant floating ips)
+  * openstack-neutron.&lt;tenant>.quotas-{floatingip,ikepolicy,ipsec_site_connection,ipsecpolicy,network,
+                                          port,router,security_group,security_group_rule,subnet}
+* nova_plugin
+  * openstack-nova.&lt;tenant>.limits.{maxImageMeta,maxPersonality,maxPersonalitySize,maxSecurityGroupRules,
+                                       maxSecurityGroups,maxServerMeta,maxTotalCores,maxTotalFloatingIps,
+                                       maxTotalInstances,maxTotalKeypairs,maxTotalRAMSize}
+    (limits on each metric, per tenant)
+  * openstack-nova.&lt;tenant>.quotas.{cores,fixed_ips,floating_ips,instances,key_pairs,,ram,security_groups}
+    (quotas on each metric, per tenant)
+  * openstack-nova.cluster.gauge.config-AllocationRatioCores (overcommit ratio for vcpus)
+  * openstack-nova.cluster.gauge.config-AllocationRatioRamMB (overcommit ratio for ram - in MB)
+  * openstack-nova.cluster.gauge.config-ReservedCores (reserved vcpus on the whole cluster)
+  * openstack-nova.cluster.gauge.config-ReservedRamMB (reserved ram on the whole cluster - in MB)
+  * openstack-nova.cluster.gauge.config-ReservedNodeCores (reserved cores per node)
+  * openstack-nova.cluster.gauge.config-ReservedNodeRamMB (reserved ram per node - in MB)
+  * openstack-nova.&lt;hypervisor-hostname>.{current_workload,free_disk_gb,free_ram_mb,hypervisor_version,
+                                             memory_mb,memory_mb_overcommit,memory_mb_overcommit_withreserve,
+                                             memory_mb_used,running_vms,vcpus,vcpus_overcommit,
+                                             vcpus_overcommit_withreserve,vcpus_used}
 
 ## Requirements
 
@@ -41,12 +83,11 @@ should follow some similar to:
     Import "keystone_plugin"
 
     <Module "keystone_plugin">
-        Verbose false
-                AuthURL "https://api.example.com:5000/v2.0"
-                Username "admin"
-                Password "123456"
-                TenantName "openstack"
-                Verbose "False"
+        Username "admin"
+        Password "123456"
+        TenantName "openstack"
+        AuthURL "https://api.example.com:5000/v2.0"
+        Verbose "False"
     </Module>
 </Plugin>
 ```
@@ -76,8 +117,6 @@ The debian packaging files are provided, but don't expect the deb in the officia
 
 ## Development
 
-Most of the code was taken from other sources, and adapted as needed.
-
 All contributions more than welcome, just send pull requests.
 
 ## License
@@ -98,15 +137,22 @@ Please log tickets and issues at the [github home](https://github.com/rochaporto
 
 [These instructions](http://packaging.ubuntu.com/html/packaging-new-software.html) should give full details.
 
-Assuming pbuilder is set for precise:
+In summary, do this once to prepare your environment:
 ```
 pbuilder-dist precise create
 ```
 
-follow these basic steps, including uploading to the ppa (example for a precise release):
-
+and for every release (from master):
 ```
-bzr builddeb -- -S -us -uc
-pbuilder-dist precise build ../collectd-openstack_0.1-2ubuntu1.dsc_source.dsc
-dput ppa:rocha-porto/collectd collectd-openstack_0.1-2ubuntu1_source.changes
+mkdir /tmp/build-collectd-os
+cd /tmp/build-collectd-os
+wget https://github.com/rochaporto/collectd-openstack/archive/master.zip
+unzip master.zip
+tar zcvf collectd-openstack-0.2.tar.gz collectd-openstack-master/
+bzr dh-make collectd-openstack 0.2 collectd-openstack-0.2.tar.gz
+cd collectd-openstack
+bzr builddeb -S
+cd ../build-area
+pbuilder-dist precise build collectd-openstack_0.2-1ubuntu1.dsc
+dput ppa:rocha-porto/collectd ../collectd-openstack_0.2-1ubuntu1_source.changes
 ```

@@ -1,3 +1,62 @@
+collectd-openstack (0.6.0-1ubuntu) precise; urgency=low
+
+  * Bugs fixed:
+    - #13: nova maxTotalRAMSize value is bogus
+    - #11: interval not taken into account
+    - #10: enable decent verbose logging
+    - #9: quota values incorrect
+    - #8: floating ip data now showing correctly
+    - #7: volumes data missing
+
+ -- Ricardo Rocha <ricardo@catalyst.net.nz>  Fri, 25 Jul 2014 16:09:45 +1200
+
+collectd-openstack (0.5.0-1ubuntu) precise; urgency=low
+
+  * Bugs fixed:
+    - #1: allow overcommit ratios (memory and cpu)
+    - #6: allow reserved values (for memory and cpus)
+  * Added interval configuration param
+  * Updated metrics with overcommit/reserved values (check README)
+
+ -- Ricardo Rocha <ricardo@catalyst.net.nz>  Tue, 22 Jul 2014 10:28:45 +1200
+
+collectd-openstack (0.4.3-1ubuntu) precise; urgency=low
+
+  * Fixed #4: protect against missing tenant_id in cinder/neutron.
+
+ -- Ricardo Rocha <ricardo@catalyst.net.nz>  Fri, 18 Jul 2014 10:28:45 +1200
+
+collectd-openstack (0.4.2-1ubuntu) precise; urgency=low
+
+  * Fixed #3: neutron plugin crashes on missing quotas
+
+ -- Ricardo Rocha <ricardo@catalyst.net.nz>  Tue, 15 Jul 2014 17:28:45 +1200
+
+collectd-openstack (0.4.1-1ubuntu) precise; urgency=low
+
+  * Added missing __init__.py file in plugins directory.
+
+ -- Ricardo Rocha <ricardo@catalyst.net.nz>  Tue, 08 Jul 2014 15:54:45 +1200
+
+collectd-openstack (0.4-1ubuntu) precise; urgency=low
+
+  * Moved plugins to /usr/lib/collectd/plugins/openstack.
+
+ -- Ricardo Rocha <ricardo@catalyst.net.nz>  Mon, 23 Jun 2014 15:54:45 +1200
+
+collectd-openstack (0.3-1ubuntu1) precise; urgency=low
+
+  * Update for new upstream release.
+
+ -- Ricardo Rocha <ricardo@catalyst.net.nz>  Tue, 06 May 2014 15:13:20 +1200
+
+collectd-openstack (0.2-1ubuntu1) precise; urgency=low
+
+  * Added dependency on python-cinderclient.
+  * Update for new upstream release.
+
+ -- Ricardo Rocha <ricardo@catalyst.net.nz>  Tue, 06 May 2014 12:31:06 +0200
+
 collectd-openstack (0.1-2ubuntu1) precise; urgency=low
 
   * Initial release.
