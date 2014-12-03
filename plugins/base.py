@@ -43,6 +43,7 @@ class Base(object):
         self.debug = False
         self.prefix = ''
         self.interval = 60.0
+        self.notenants = False
 
     def get_keystone(self):
         """Returns a Keystone.Client instance."""
@@ -82,6 +83,8 @@ class Base(object):
                 self.prefix = node.values[0]
             elif node.key == 'Interval':
                 self.interval = float(node.values[0])
+            elif node.key == 'NoTenants':
+                self.notenants = True
             else:
                 collectd.warning("%s: unknown config key: %s" % (self.prefix, node.key))
 

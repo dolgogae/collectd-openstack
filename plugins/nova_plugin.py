@@ -47,30 +47,32 @@ class NovaPlugin(base.Base):
         """Retrieves stats from nova"""
         keystone = self.get_keystone()
 
-        tenant_list = keystone.tenants.list()
-
         data = { self.prefix: { 'cluster': { 'config': {} }, } }
         client = NovaClient('2', self.username, self.password, self.tenant, self.auth_url)
-        for tenant in tenant_list:
-            # FIX: nasty but works for now (tenant.id not being taken below :()
-            client.tenant_id = tenant.id
-            data[self.prefix]["tenant-%s" % tenant.name] = { 'limits': {}, 'quotas': {} }
-            data_tenant = data[self.prefix]["tenant-%s" % tenant.name]
 
-            # Get absolute limits for tenant
-            limits = client.limits.get(tenant_id=tenant.id).absolute
-            for limit in limits:
-                if 'ram' in limit.name.lower():
-                    limit.value = limit.value * 1024.0 * 1024.0
-                data_tenant['limits'][limit.name] = limit.value
+        if getattr(self, 'notenants') == False:
+            tenant_list = keystone.tenants.list()
 
-            # Quotas for tenant
-            quotas = client.quotas.get(tenant.id)
-            for item in ('cores', 'fixed_ips', 'floating_ips', 'instances',
-                'key_pairs', 'ram', 'security_groups'):
-                if item == 'ram':
-                    setattr(quotas, item, getattr(quotas, item) * 1024 * 1024)
-                data_tenant['quotas'][item] = getattr(quotas, item)
+            for tenant in tenant_list:
+                # FIX: nasty but works for now (tenant.id not being taken below :()
+                client.tenant_id = tenant.id
+                data[self.prefix]["tenant-%s" % tenant.name] = { 'limits': {}, 'quotas': {} }
+                data_tenant = data[self.prefix]["tenant-%s" % tenant.name]
+
+                # Get absolute limits for tenant
+                limits = client.limits.get(tenant_id=tenant.id).absolute
+                for limit in limits:
+                    if 'ram' in limit.name.lower():
+                        limit.value = limit.value * 1024.0 * 1024.0
+                    data_tenant['limits'][limit.name] = limit.value
+
+                # Quotas for tenant
+                quotas = client.quotas.get(tenant.id)
+                for item in ('cores', 'fixed_ips', 'floating_ips', 'instances',
+                    'key_pairs', 'ram', 'security_groups'):
+                    if item == 'ram':
+                        setattr(quotas, item, getattr(quotas, item) * 1024 * 1024)
+                    data_tenant['quotas'][item] = getattr(quotas, item)
 
         # Cluster allocation / reserved values
         for item in ('AllocationRatioCores', 'AllocationRatioRam',
