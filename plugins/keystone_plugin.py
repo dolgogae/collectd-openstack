@@ -54,19 +54,20 @@ class KeystonePlugin(base.Base):
                 'count': len(keystone.__getattribute__(item).list())
             }
 
-        # User count per tenant
-        tenant_list = keystone.tenants.list()
-        for tenant in tenant_list:
-            data[self.prefix]["tenant-%s" % tenant.name] = { 'users': {} }
-            data_tenant = data[self.prefix]["tenant-%s" % tenant.name]
-            data_tenant['users']['count'] = len(keystone.tenants.list_users(tenant.id))
+        if getattr(self, 'notenants') == False:
+            # User count per tenant
+            tenant_list = keystone.tenants.list()
+            for tenant in tenant_list:
+                data[self.prefix]["tenant-%s" % tenant.name] = { 'users': {} }
+                data_tenant = data[self.prefix]["tenant-%s" % tenant.name]
+                data_tenant['users']['count'] = len(keystone.tenants.list_users(tenant.id))
 
         return data
 
 try:
     plugin = KeystonePlugin()
 except Exception as exc:
-    collectd.error("openstack-keystone: failed to initialize glance plugin :: %s :: %s"
+    collectd.error("openstack-keystone: failed to initialize keystone plugin :: %s :: %s"
             % (exc, traceback.format_exc()))
     
 def configure_callback(conf):
