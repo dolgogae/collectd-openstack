@@ -64,12 +64,24 @@ class CinderPlugin(base.Base):
                 'volume-snapshots': { 'count': 0, 'bytes': 0 }
             }
 
-        client = CinderClient('1', self.username, self.password, self.tenant, self.auth_url)
+        if getattr(self, 'region') is None:
+            client = CinderClient('1', self.username, self.password,
+                                  self.tenant, self.auth_url)
+        else:
+            client = CinderClient('1', self.username, self.password,
+                                  self.tenant, self.auth_url,
+                                  region_name=self.region)
         # Collect limits for each tenant (quotas data is bogus in havana)
         for tenant in tenant_list:
             data_tenant = data[self.prefix]["tenant-%s" % tenant.name]
             # limits call in havana does not expose a tenant_id param :(
-            client2 = CinderClient('1', self.username, self.password, tenant.name, self.auth_url)
+            if getattr(self, 'region') is None:
+                client2 = CinderClient('1', self.username, self.password,
+                                       tenant.name, self.auth_url)
+            else:
+                client = CinderClient('1', self.username, self.password,
+                                      self.tenant, self.auth_url,
+                                      region_name=self.region)
             try:
                 limits = client2.limits.get().absolute
             except Exception:
