@@ -44,11 +44,17 @@ class Base(object):
         self.prefix = ''
         self.interval = 60.0
         self.notenants = False
+        self.region = None
 
     def get_keystone(self):
         """Returns a Keystone.Client instance."""
-        return KeystoneClient(username=self.username, password=self.password,
-                tenant_name=self.tenant, auth_url=self.auth_url)
+        if self.region is None:
+            return KeystoneClient(username=self.username, password=self.password,
+                                  tenant_name=self.tenant, auth_url=self.auth_url)
+        else:
+            return KeystoneClient(username=self.username, password=self.password,
+                                  tenant_name=self.tenant, auth_url=self.auth_url,
+                                  region_name=self.region)
 
     def config_callback(self, conf):
         """Takes a collectd conf object and fills in the local config."""
@@ -85,6 +91,8 @@ class Base(object):
                 self.interval = float(node.values[0])
             elif node.key == 'NoTenants':
                 self.notenants = True
+            elif node.key == 'Region':
+                self.region = node.values[0]
             else:
                 collectd.warning("%s: unknown config key: %s" % (self.prefix, node.key))
 

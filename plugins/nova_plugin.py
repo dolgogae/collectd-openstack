@@ -48,7 +48,11 @@ class NovaPlugin(base.Base):
         keystone = self.get_keystone()
 
         data = { self.prefix: { 'cluster': { 'config': {} }, } }
-        client = NovaClient('2', self.username, self.password, self.tenant, self.auth_url)
+        if getattr(self, 'region') is None:
+            client = NovaClient('2', self.username, self.password, self.tenant, self.auth_url)
+        else:
+            client = NovaClient('2', self.username, self.password, self.tenant, self.auth_url,
+                                region_name=self.region)
 
         if getattr(self, 'notenants') == False:
             tenant_list = keystone.tenants.list()
