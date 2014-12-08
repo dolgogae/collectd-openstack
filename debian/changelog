@@ -1,3 +1,9 @@
+collectd-openstack (0.8.0-1ubuntu) precise; urgency=medium
+
+  * Add support for multiple regions in keystone catalog
+
+ -- Xav Paice <xav@catalyst.net.nz>  Tue, 09 Dec 2014 11:12:08 +1300
+
 collectd-openstack (0.7.0-1ubuntu) precise; urgency=medium
 
   * Add NoTenants option to disable per-tenant metrics
