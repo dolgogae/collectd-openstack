@@ -7,7 +7,7 @@ A set of collectd plugins monitoring and publishing metrics for OpenStack compon
 
 ## Screenshots
 
-![image](https://raw.github.com/rochaporto/collectd-openstack/master/public/openstack-usage.png)
+![image](https://raw.github.com/catalyst/collectd-openstack/master/public/openstack-usage.png)
 
 ## Plugins and Metrics
 
@@ -66,7 +66,7 @@ Check its documentation for details.
 
 The example configuration(s) below assume the plugins to be located under `/usr/lib/collectd/plugins`.
 
-If you're under ubuntu, consider installing from [this ppa](https://launchpad.net/~rocha-porto/+archive/collectd).
+If you're under ubuntu, consider installing from [this ppa](https://launchpad.net/~catalystit/+archive/collectd).
 
 Each plugin should have its own config file, under `/etc/collectd/conf.d/<pluginname>.conf`, which
 should follow some similar to:
@@ -129,7 +129,7 @@ Ricardo Rocha <ricardo@catalyst.net.nz>
 
 ## Support
 
-Please log tickets and issues at the [github home](https://github.com/rochaporto/collectd-openstack/issues).
+Please log tickets and issues at the [github home](https://github.com/catalyst/collectd-openstack/issues).
 
 ## Additional Notes
 
@@ -146,13 +146,13 @@ and for every release (from master):
 ```
 mkdir /tmp/build-collectd-os
 cd /tmp/build-collectd-os
-wget https://github.com/rochaporto/collectd-openstack/archive/master.zip
+wget https://github.com/catalyst/collectd-openstack/archive/master.zip
 unzip master.zip
-tar zcvf collectd-openstack-0.2.tar.gz collectd-openstack-master/
-bzr dh-make collectd-openstack 0.2 collectd-openstack-0.2.tar.gz
+tar zcvf collectd-openstack-0.7.0.tar.gz collectd-openstack-master/
+bzr dh-make collectd-openstack 0.7.0 collectd-openstack-0.7.0.tar.gz
 cd collectd-openstack
 bzr builddeb -S
 cd ../build-area
-pbuilder-dist precise build collectd-openstack_0.2-1ubuntu1.dsc
-dput ppa:rocha-porto/collectd ../collectd-openstack_0.2-1ubuntu1_source.changes
+pbuilder-dist precise build collectd-openstack_0.7.0-1ubuntu.dsc
+dput ppa:catalystit/collectd ../collectd-openstack_0.7.0-1ubuntu_source.changes
 ```
