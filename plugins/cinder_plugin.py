@@ -17,12 +17,12 @@
 #
 # Authors:
 #   Ricardo Rocha <ricardo@catalyst.net.nz>
+#   Xav Paice <xav@catalyst.net.nz>
 #
 # About this plugin:
 #   This plugin collects OpenStack cinder information, including stats on
 #   volumes and snapshots usage per tenant.
 #
-# TODO: Start using cinder v2 api
 #
 # collectd:
 #   http://collectd.org
@@ -31,14 +31,15 @@
 # collectd-python:
 #   http://collectd.org/documentation/manpages/collectd-python.5.shtml
 #
-#!/usr/bin/env python
 #
-from cinderclient.client import Client as CinderClient
 
-import collectd
 import traceback
 
 import base
+
+from cinderclient.client import Client as CinderClient
+import collectd
+
 
 class CinderPlugin(base.Base):
 
@@ -47,91 +48,56 @@ class CinderPlugin(base.Base):
         self.prefix = 'openstack-cinder'
 
     def get_stats(self):
-        """Retrieves stats from cinder"""
+        """Retrieves stats from cinder."""
         keystone = self.get_keystone()
 
         tenant_list = keystone.tenants.list()
 
         tenants = {}
-        data = { self.prefix: {} }
-
-        # Initialize tenant struct
-        for tenant in tenant_list:
-            tenants[tenant.id] = tenant.name
-            data[self.prefix]["tenant-%s" % tenant.name] = {
-                'limits': {}, 'quotas': {},
-                'volumes': { 'count': 0, 'bytes': 0 },
-                'volume-snapshots': { 'count': 0, 'bytes': 0 }
-            }
+        data = {self.prefix: {}}
 
         if getattr(self, 'region') is None:
-            client = CinderClient('1', self.username, self.password,
+            client = CinderClient('2', self.username, self.password,
                                   self.tenant, self.auth_url)
         else:
-            client = CinderClient('1', self.username, self.password,
+            client = CinderClient('2', self.username, self.password,
                                   self.tenant, self.auth_url,
                                   region_name=self.region)
-        # Collect limits for each tenant (quotas data is bogus in havana)
         for tenant in tenant_list:
+            tenants[tenant.id] = tenant.name
+            # TODO(xp) grab this list from the available volume types, rather
+            # than just the totals
+            data[self.prefix]["tenant-%s" % tenant.name] = {
+                'gigabytes': {'in_use': 0, 'limit': 0, 'reserved': 0},
+                'snapshots': {'in_use': 0, 'limit': 0, 'reserved': 0},
+                'volumes': {'in_use': 0, 'limit': 0, 'reserved': 0}
+            }
             data_tenant = data[self.prefix]["tenant-%s" % tenant.name]
-            # limits call in havana does not expose a tenant_id param :(
-            if getattr(self, 'region') is None:
-                client2 = CinderClient('1', self.username, self.password,
-                                       tenant.name, self.auth_url)
-            else:
-                client = CinderClient('1', self.username, self.password,
-                                      self.tenant, self.auth_url,
-                                      region_name=self.region)
             try:
-                limits = client2.limits.get().absolute
-            except Exception:
+                quotaset = client.quotas.get(tenant.id, usage=True)
+            except Exception as e:
+                collectd.error(e.errno, e.strerror)
                 continue
-            for limit in limits:
-                if 'Giga' in limit.name:
-                    limit.value = limit.value * 1024 * 1024 * 1024
-                data_tenant['limits'][limit.name] = limit.value
-
-        # Ideally we would use limits, but the usage values are only available
-        # in icehouse (havana needs a full volumes list)
-        # https://github.com/openstack/cinder/commit/608a8dd55300555fb1d17cdf53d08d331d7f5064
-        volumes = client.volumes.list(search_opts={'all_tenants': 1})
-        for volume in volumes:
-            try:
-                data_tenant = data[self.prefix]["tenant-%s" % tenants[getattr(volume, 'os-vol-tenant-attr:tenant_id')]]
-            except KeyError:
-                continue
-            data_tenant['volumes']['count'] += 1
-            data_tenant['volumes']['bytes'] += (volume.size * 1024 * 1024 * 1024)
-
-        snapshots = client.volume_snapshots.list(search_opts={'all_tenants': 1})
-        # TODO: seems the project_id extattr is not always available, need to check why
-        # https://github.com/rochaporto/collectd-openstack/issues/12
-        for snapshot in snapshots:
-            try:
-                tenant_id = getattr(snapshot, 'os-extended-snapshot-attributes:project_id')
-            except AttributeError:
-                continue
-            try:
-                data_tenant = data[self.prefix]["tenant-%s" % tenants[tenant_id]]
-            except KeyError:
-                continue
-            data_tenant['volume-snapshots']['count'] += 1
-            data_tenant['volume-snapshots']['bytes'] += (snapshot.size * 1024 * 1024 * 1024)
-
+            data_tenant['gigabytes'] = quotaset.gigabytes
+            data_tenant['snapshots'] = quotaset.snapshots
+            data_tenant['volumes'] = quotaset.volumes
+            data[self.prefix]["tenant-%s" % tenant.name] = data_tenant
         return data
 
 try:
     plugin = CinderPlugin()
 except Exception as exc:
     collectd.error("openstack-cinder: failed to initialize cinder plugin :: %s :: %s"
-            % (exc, traceback.format_exc()))
+                   % (exc, traceback.format_exc()))
+
 
 def configure_callback(conf):
-    """Received configuration information"""
+    """Received configuration information."""
     plugin.config_callback(conf)
 
+
 def read_callback():
-    """Callback triggerred by collectd on read"""
+    """Callback triggerred by collectd on read."""
     plugin.read_callback()
 
 collectd.register_config(configure_callback)
