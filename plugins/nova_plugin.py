@@ -102,6 +102,29 @@ class NovaPlugin(base.Base):
             data[self.prefix][name]['vcpus_overcommit_withreserve'] = \
                 data[self.prefix][name]['vcpus_overcommit'] - data[self.prefix]['cluster']['config']['ReservedNodeCores']
 
+        # NOTE(flwang): Below data will do the similar thing as above, but only
+        # for windows host.
+        aggregates = client.aggregates.list()
+        for aggregate in aggregates:
+            if 'os_distro' in aggregate.metadata and aggregate.metadata[os_distro] == 'windows':
+                for host in aggregate.hosts:
+                    for hypervisor in hypervisors:
+                        if hypervisor.hypervisor_hostname.startswith(host.name):
+                            name = "windows-hypervisor-%s" % hypervisor.hypervisor_hostname
+                            data[self.prefix][name] = {}
+                            for item in ('current_workload', 'free_disk_gb', 'free_ram_mb',
+                                    'hypervisor_version', 'memory_mb', 'memory_mb_used',
+                                    'running_vms', 'vcpus', 'vcpus_used'):
+                                data[self.prefix][name][item] = getattr(hypervisor, item)
+                            data[self.prefix][name]['memory_mb_overcommit'] = \
+                                data[self.prefix][name]['memory_mb'] * data[self.prefix]['cluster']['config']['AllocationRatioRam']
+                            data[self.prefix][name]['memory_mb_overcommit_withreserve'] = \
+                                data[self.prefix][name]['memory_mb_overcommit'] - data[self.prefix]['cluster']['config']['ReservedNodeRamMB']
+                            data[self.prefix][name]['vcpus_overcommit'] = \
+                                data[self.prefix][name]['vcpus'] * data[self.prefix]['cluster']['config']['AllocationRatioCores']
+                            data[self.prefix][name]['vcpus_overcommit_withreserve'] = \
+                                data[self.prefix][name]['vcpus_overcommit'] - data[self.prefix]['cluster']['config']['ReservedNodeCores']
+
         return data
 
 try:
