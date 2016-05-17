@@ -106,7 +106,7 @@ class NovaPlugin(base.Base):
         # for windows host.
         aggregates = client.aggregates.list()
         for aggregate in aggregates:
-            if 'os_distro' in aggregate.metadata and aggregate.metadata[os_distro] == 'windows':
+            if aggregate.metadata.get('os_distro', None) == 'windows':
                 for host in aggregate.hosts:
                     for hypervisor in hypervisors:
                         if hypervisor.hypervisor_hostname.startswith(host.name):
