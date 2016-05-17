@@ -109,7 +109,7 @@ class NovaPlugin(base.Base):
             if aggregate.metadata.get('os_distro', None) == 'windows':
                 for host in aggregate.hosts:
                     for hypervisor in hypervisors:
-                        if hypervisor.hypervisor_hostname.startswith(host.name):
+                        if hypervisor.hypervisor_hostname.startswith(host):
                             name = "windows-hypervisor-%s" % hypervisor.hypervisor_hostname
                             data[self.prefix][name] = {}
                             for item in ('current_workload', 'free_disk_gb', 'free_ram_mb',
