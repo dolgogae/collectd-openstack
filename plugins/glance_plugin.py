@@ -57,10 +57,10 @@ class GlancePlugin(base.Base):
             data_tenant['images']['count'] = 0
             data_tenant['images']['bytes'] = 0
 
-            image_list = client.images.list(tenant_id=tenant.name)
+            image_list = client.images.list(filters={'owner': tenant.id})
             for image in image_list:
                 data_tenant['images']['count'] += 1
-                data_tenant['images']['bytes'] += int(image['size'])
+                data_tenant['images']['bytes'] += int(image['size']) if image['size'] else 0
 
         return data
 

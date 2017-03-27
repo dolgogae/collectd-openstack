@@ -74,17 +74,17 @@ class Base(object):
                 if node.values[0] in ['True', 'true']:
                     self.debug = True
             elif node.key == "AllocationRatioCores":
-                self.AllocationRatioCores = float(node.values[0])
+                self.AllocationRatioCores = float(node.values[0] or 0)
             elif node.key == "AllocationRatioRam":
-                self.AllocationRatioRam = float(node.values[0])
+                self.AllocationRatioRam = float(node.values[0] or 0)
             elif node.key == "ReservedNodeCores":
-                self.ReservedNodeCores = float(node.values[0])
+                self.ReservedNodeCores = float(node.values[0] or 0)
             elif node.key == "ReservedNodeRamMB":
-                self.ReservedNodeRamMB = float(node.values[0])
+                self.ReservedNodeRamMB = float(node.values[0] or 0)
             elif node.key == "ReservedCores":
-                self.ReservedCores = float(node.values[0])
+                self.ReservedCores = float(node.values[0] or 0)
             elif node.key == "ReservedRamMB":
-                self.ReservedRamMB = float(node.values[0])
+                self.ReservedRamMB = float(node.values[0] or 0)
             elif node.key == "Prefix":
                 self.prefix = node.values[0]
             elif node.key == 'Interval':
