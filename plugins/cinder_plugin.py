@@ -53,7 +53,6 @@ class CinderPlugin(base.Base):
 
         tenant_list = keystone.tenants.list()
 
-        tenants = {}
         data = {self.prefix: {}}
 
         if getattr(self, 'region') is None:
@@ -64,7 +63,6 @@ class CinderPlugin(base.Base):
                                   self.tenant, self.auth_url,
                                   region_name=self.region)
         for tenant in tenant_list:
-            tenants[tenant.id] = tenant.name
             # TODO(xp) grab this list from the available volume types, rather
             # than just the totals
             data[self.prefix]["tenant-%s" % tenant.name] = {
@@ -76,7 +74,7 @@ class CinderPlugin(base.Base):
             try:
                 quotaset = client.quotas.get(tenant.id, usage=True)
             except Exception as e:
-                collectd.error(e.errno, e.strerror)
+                collectd.error(str(e))
                 continue
             data_tenant['gigabytes'] = quotaset.gigabytes
             data_tenant['snapshots'] = quotaset.snapshots
