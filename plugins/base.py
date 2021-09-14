@@ -26,7 +26,8 @@
 # collectd-python:
 #   http://collectd.org/documentation/manpages/collectd-python.5.shtml
 #
-from keystoneclient.v2_0 import Client as KeystoneClient
+from keystoneclient.v3.client import Client as KeystoneClient
+from config import auth_data
 
 import collectd
 import datetime
@@ -35,10 +36,13 @@ import traceback
 class Base(object):
 
     def __init__(self):
-        self.username = 'admin'
-        self.password = '123456'
-        self.tenant = 'openstack'
-        self.auth_url = 'http://api.example.com:5000/v2.0'
+        self.username = auth_data['username']
+        self.password = auth_data['password']
+        self.project_name = auth_data['project_name']
+        self.auth_url = auth_data['keystone_url']
+        self.project_domain_name = auth_data['project_domain_name']
+        self.user_domain_name = auth_data['user_domain_name']
+
         self.verbose = False
         self.debug = False
         self.prefix = ''
@@ -48,13 +52,19 @@ class Base(object):
 
     def get_keystone(self):
         """Returns a Keystone.Client instance."""
-        if self.region is None:
-            return KeystoneClient(username=self.username, password=self.password,
-                                  tenant_name=self.tenant, auth_url=self.auth_url)
-        else:
-            return KeystoneClient(username=self.username, password=self.password,
-                                  tenant_name=self.tenant, auth_url=self.auth_url,
-                                  region_name=self.region)
+        return KeystoneClient(auth_url=self.auth_url,
+                              password=self.password,
+                              project_name=self.project_name,
+                              username=self.username,
+                              project_domain_name=self.project_domain_name,
+                              user_domain_name=self.user_domain_name)
+        # if self.region is None:
+        #     return KeystoneClient(username=self.username, password=self.password,
+        #                           tenant_name=self.tenant, auth_url=self.auth_url)
+        # else:
+        #     return KeystoneClient(username=self.username, password=self.password,
+        #                           tenant_name=self.tenant, auth_url=self.auth_url,
+        #                           region_name=self.region)
 
     def config_callback(self, conf):
         """Takes a collectd conf object and fills in the local config."""

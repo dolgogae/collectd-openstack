@@ -56,11 +56,11 @@ class KeystonePlugin(base.Base):
 
         if getattr(self, 'notenants') == False:
             # User count per tenant
-            tenant_list = keystone.tenants.list()
+            tenant_list = keystone.projects.list()
             for tenant in tenant_list:
                 data[self.prefix]["tenant-%s" % tenant.name] = { 'users': {} }
                 data_tenant = data[self.prefix]["tenant-%s" % tenant.name]
-                data_tenant['users']['count'] = len(keystone.tenants.list_users(tenant.id))
+                data_tenant['users']['count'] = len(keystone.projects.list_users(tenant.id))
 
         return data
 
